@@ -142,3 +142,29 @@ class userLogin(View):
 
             return response
         return redirect(reverse('goods:index'))
+
+
+class userInfo(View):
+    '''
+    进入用户信息
+    '''
+
+    def get(self, request):
+        return render(request, 'user_center_info.html')
+
+
+class userOrder(View):
+    '''
+    进入用户订单
+    '''
+
+    def get(self, request):
+        return render(request, 'user_center_order.html')
+
+
+class userSite(View):
+    '''
+    用户中心
+    '''
+    def get(self, request):
+        return render(request, 'user_center_site.html')
