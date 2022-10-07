@@ -142,14 +142,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.163.com'
 # 端口号是固定的
 EMAIL_PORT = 25
-#发送邮件的邮箱
+# 发送邮件的邮箱
 EMAIL_HOST_USER = 'hyw144@163.com'
-#在邮箱中设置的客户端授权密码
+# 在邮箱中设置的客户端授权密码
 EMAIL_HOST_PASSWORD = 'huang123'
-#收件人看到的发件人
+# 收件人看到的发件人
 EMAIL_FROM = 'python<hyw144@163.com>'
 
-#框架的缓存转移至redis
+# 框架的缓存转移至redis
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -161,3 +161,5 @@ CACHES = {
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+# 未登录时跳转的连接
+LOGIN_URL = '/user/login'

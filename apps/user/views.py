@@ -1,4 +1,5 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -128,13 +129,12 @@ class userLogin(View):
             # 判断是否需要记录用户名
             remember = request.POST.get('remember')
             # 获取登录后所要跳转到的地址
-            # 默认跳转到首页
+            # 默认跳转到首页,request.GET.get()第二个入参是默认值，获取不到key时候返回
             next_url = request.GET.get('next', reverse('goods:index'))
             # 跳转到登陆成功之后的地址，并获取响应对象
             response = redirect(next_url)
             # 记住用户名
             if remember == 'on':
-
                 # 给响应设置cookie
                 response.set_cookie('username', username, max_age=7 * 24 * 3600)
             else:
@@ -144,13 +144,29 @@ class userLogin(View):
         return redirect(reverse('goods:index'))
 
 
-class userInfo(View):
+def userLogout(request):
+    '''用户退回的方法，使用django自带的退出'''
+    logout(request)
+    return redirect(reverse('goods:index'))
+
+
+class userSite(View):
     '''
-    进入用户信息
+    用户中心(任何页面跳转user模块)
     '''
 
     def get(self, request):
-        return render(request, 'user_center_info.html')
+        return render(request, 'user_center_info.html', {"page": "info"})
+
+
+class userInfo(View):
+    '''
+    进入用户信息，默认打开“个人信息tab”
+    '''
+
+    def get(self, request):
+        # print(request.user.is_authenticated())
+        return render(request, 'user_center_info.html', {"page": "info"})
 
 
 class userOrder(View):
@@ -159,12 +175,13 @@ class userOrder(View):
     '''
 
     def get(self, request):
-        return render(request, 'user_center_order.html')
+        return render(request, 'user_center_order.html', {"page": "order"})
 
 
-class userSite(View):
+class userAddress(View):
     '''
-    用户中心
+    用户收货地管理
     '''
+
     def get(self, request):
-        return render(request, 'user_center_site.html')
+        return render(request, 'user_center_site.html', {"page": "address"})
