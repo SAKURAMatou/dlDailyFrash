@@ -6,7 +6,8 @@ from django.urls import reverse
 from django.views import View
 from django.conf import settings
 from django.core.mail import send_mail
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from itsdangerous import URLSafeTimedSerializer
+from .models import Address
 import re
 
 from apps.user.models import User
@@ -166,6 +167,12 @@ class userInfo(View):
 
     def get(self, request):
         # print(request.user.is_authenticated())
+        # 获取用户的默认收货地
+        user = request.user
+        address = Address.objects.get_defult_address(user.id)
+        user.receiver = address.receiver
+        user.re_address = address.re_address
+        user.re_phone = address.re_phone
         return render(request, 'user_center_info.html', {"page": "info"})
 
 
@@ -184,4 +191,35 @@ class userAddress(View):
     '''
 
     def get(self, request):
-        return render(request, 'user_center_site.html', {"page": "address"})
+        # 查询所有的收货地址
+        resAddress = getAllAddress()
+        return render(request, 'user_center_site.html', {"page": "address", "allAddress": resAddress})
+
+    def post(self, request):
+        re_phone = request.POST.get("re_phone")
+        zip_code = request.POST.get("zip_code")
+        re_address = request.POST.get("re_address")
+        receiver = request.POST.get("receiver")
+        # 校验必填
+        if not all([re_phone, re_address, receiver]):
+            resAddress = getAllAddress()
+            return render(request, 'user_center_site.html',
+                          {"page": "address", "errorMsg": "缺少必填项！", "allAddress": resAddress})
+        # 创建新的收货地址
+        user = request.user
+        defaultAddress = Address.objects.get_defult_address(user.id)
+        is_defalut = defaultAddress is None
+        Address.objects.create(userID=user, re_phone=re_phone, zip_code=zip_code, re_address=re_address,
+                               receiver=receiver, is_defalut=is_defalut)
+        # 返回页面所有的收货地址
+        resAddress = getAllAddress()
+        return render(request, 'user_center_site.html', {"page": "address", "allAddress": resAddress})
+
+
+def getAllAddress():
+    allAddress = Address.objects.all()
+    resAddress = []
+    for address in allAddress:
+        resAddress.append(
+            f"{address.re_address}（{address.receiver} 收）{address.re_phone[0:3]}***{address.re_phone[-4:]}")
+    return resAddress
