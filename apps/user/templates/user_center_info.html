@@ -4,6 +4,11 @@
     <div class="right_content clearfix">
         <div class="info_con clearfix">
             <h3 class="common_title2">基本信息</h3>
+            <form action="upload_file" method="post" enctype="multipart/form-data">
+                {% csrf_token %}{{ form.as_p }}
+                <p><input type="file" name="upload_file_form"></p>
+                <input type="submit" value='上传'>
+            </form>
             <ul class="user_info_list">
                 <li><span>收货人：</span>{{ user.receiver }}</li>
                 <li><span>联系方式：</span>{{ user.re_phone }}</li>
@@ -16,8 +21,8 @@
             <ul class="goods_type_list clearfix">
                 <li>
                     <a href="detail.html">
-{#                        <img src="../static/images/goods/goods003.jpg"></a>#}
-                        <img src="http://192.168.233.5:9090/dltest/20220116_110735.jpg"></a>
+                        {#                        <img src="../static/images/goods/goods003.jpg"></a>#}
+                        <img src="http://192.168.233.5:9000/dltest/20220116_110735.jpg"></a>
                     <h4><a href="detail.html">大兴大棚草莓</a></h4>
                     <div class="operate">
                         <span class="prize">￥16.80</span>

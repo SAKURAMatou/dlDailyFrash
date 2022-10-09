@@ -7,6 +7,8 @@ from django.views import View
 from django.conf import settings
 from django.core.mail import send_mail
 from itsdangerous import URLSafeTimedSerializer
+
+from db.MinioClientUtil import MinioClient
 from .models import Address
 import re
 
@@ -223,3 +225,11 @@ def getAllAddress():
         resAddress.append(
             f"{address.re_address}（{address.receiver} 收）{address.re_phone[0:3]}***{address.re_phone[-4:]}")
     return resAddress
+
+
+def uploadFile(request):
+    file = request.FILES.get("upload_file_form")
+    client = MinioClient()
+    url = client.upLoadFile(file.name, file)
+    print("FILES:", request.FILES)
+    print(url)

@@ -11,5 +11,6 @@ urlpatterns = [
     path("info", login_required(userViews.userInfo.as_view()), name='userInfo'),  # 用户信息
     path("order", login_required(userViews.userOrder.as_view()), name="userOrder"),  # 用户订单
     path("address", login_required(userViews.userAddress.as_view()), name="userAddress"),  # 用户收货地址
-    path("logout", userViews.userLogout, name="userLogout")
+    path("logout", userViews.userLogout, name="userLogout"),
+    path("upload_file", userViews.uploadFile, name="uploadFile")
 ]

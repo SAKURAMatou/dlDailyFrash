@@ -163,3 +163,5 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 # 未登录时跳转的连接
 LOGIN_URL = '/user/login'
+
+DEFAULT_FILE_STORAGE = 'db.MinioClientUtil.DjangoToMinio'
