@@ -1,15 +1,15 @@
-from django.db import models
-from db.Base_model import BaseModel
+from db.Base_model import *
 
 
-# Create your models here.
+# 使用ForeignKey指定外键时默认在同一个app下找表实体，不在同一个app下时需要指定user.User
 
 class GoodsType(BaseModel):
     '''商品类型模型类'''
     name = models.CharField(max_length=20, verbose_name="种类名称")
     logo = models.CharField(max_length=50, verbose_name="logo图片地址")
-    image = models.ImageField(upload_to='type', verbose_name='商品类型图片')
-    imgGuid = models.ForeignKey('ImgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+    # image = models.ImageField(upload_to='type', verbose_name='商品类型图片')
+    imgGuid = models.ForeignKey('AttachFiles', on_delete=models.DO_NOTHING,
+                                verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
 
     class Meta:
         db_table = 'dl_goods_type'
@@ -29,7 +29,8 @@ class GoodsSKU(BaseModel):
     status = models.SmallIntegerField(default=1, choices=status_choice, verbose_name='商品状态')
     goodType = models.ForeignKey('GoodsType', on_delete=models.DO_NOTHING, verbose_name='商品种类')
     sealeCount = models.IntegerField(default=0, verbose_name='商品销量')
-    imgGuid = models.ForeignKey('ImgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+    imgGuid = models.ForeignKey('AttachFiles', on_delete=models.DO_NOTHING,
+                                verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
 
     class Meta:
         db_table = 'dl_goods_sku'
@@ -45,4 +46,16 @@ class GoodsSPU(BaseModel):
     class Meta:
         db_table = 'dl_goods_spu'
         verbose_name = '商品spu表'
+        verbose_name_plural = verbose_name
+
+
+class AttachFiles(BaseModel):
+    '''图片信息表'''
+    status_choice = ((0, '下架'), (1, '上架'))
+    imgUrl = models.CharField(max_length=100, verbose_name='图片地址')
+    status = models.SmallIntegerField(choices=status_choice, default=1)
+
+    class Meta:
+        db_table = 'dl_img_file'
+        verbose_name = '图片附件表'
         verbose_name_plural = verbose_name
