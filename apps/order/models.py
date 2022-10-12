@@ -10,7 +10,7 @@ class OrderInfo(BaseModel):
     '''订单信息表'''
     payWay_chioce = ((1, '支付宝'), (2, '微信支付'), (3, '信用卡'))
     OrderInfo_status = ((0, '提交订单'), (1, '未支付'), (2, '已支付'), (3, '已发货'), (4, '待评价'), (5, '已完成'))
-    guid = models.CharField(primary_key=True, default=uuid.uuid4(), verbose_name='订单主键，使用UUID')
+    guid = models.UUIDField(primary_key=True, max_length=50, verbose_name='订单主键，使用UUID')
     userId = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='用户主键')
     payWay = models.SmallIntegerField(choices=payWay_chioce, default=1, verbose_name='支付方式')
     goodsCount = models.SmallIntegerField(default=0, verbose_name='订单内商品总数')
@@ -26,7 +26,7 @@ class OrderInfo(BaseModel):
 
 class OrderGoods(BaseModel):
     '''订单商品表'''
-    guid = models.CharField(primary_key=True, default=uuid.uuid4(), verbose_name='订单中的商品信息主键，使用UUID')
+    guid = models.UUIDField(primary_key=True, max_length=50, verbose_name='订单中的商品信息主键，使用UUID')
     orderGuid = models.ForeignKey(OrderInfo, on_delete=models.CASCADE, verbose_name='对应订单主键')
     skuCount = models.IntegerField(default=0, verbose_name='商品数量')
     skuPrice = models.DecimalField(decimal_places=2, max_digits=10, verbose_name='商品单价')
