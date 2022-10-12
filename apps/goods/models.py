@@ -9,10 +9,10 @@ class GoodsType(BaseModel):
     name = models.CharField(max_length=20, verbose_name="种类名称")
     logo = models.CharField(max_length=50, verbose_name="logo图片地址")
     image = models.ImageField(upload_to='type', verbose_name='商品类型图片')
-    imgGuid = models.ForeignKey('imgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+    imgGuid = models.ForeignKey('ImgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
 
     class Meta:
-        db_table = 'dl_goodsType'
+        db_table = 'dl_goods_type'
         verbose_name = '商品种类'
         verbose_name_plural = verbose_name
 
@@ -29,17 +29,20 @@ class GoodsSKU(BaseModel):
     status = models.SmallIntegerField(default=1, choices=status_choice, verbose_name='商品状态')
     goodType = models.ForeignKey('GoodsType', on_delete=models.DO_NOTHING, verbose_name='商品种类')
     sealeCount = models.IntegerField(default=0, verbose_name='商品销量')
-    imgGuid = models.ForeignKey('imgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+    imgGuid = models.ForeignKey('ImgFile', on_delete=models.DO_NOTHING, verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+
+    class Meta:
+        db_table = 'dl_goods_sku'
+        verbose_name = '商品sku表'
+        verbose_name_plural = verbose_name
 
 
-class imgFile(BaseModel):
-    '''图片信息表'''
-    status_choice = ((0, '下架'), (1, '上架'))
-    imgUrl = models.CharField(max_length=100, verbose_name='图片地址')
-    status = models.SmallIntegerField(choices=status_choice, default=1)
-
-
-class goodsSPU(BaseModel):
+class GoodsSPU(BaseModel):
     '''商品spu表'''
     name = models.CharField(max_length=50, verbose_name="商品spu名称")
     detail = models.CharField(max_length=500, verbose_name='商品详情')
+
+    class Meta:
+        db_table = 'dl_goods_spu'
+        verbose_name = '商品spu表'
+        verbose_name_plural = verbose_name

@@ -12,3 +12,15 @@ class BaseModel(models.Model):
     class Meta:
         # 说明是一个抽象模型类
         abstract = True
+
+
+class ImgFile(BaseModel):
+    '''图片信息表'''
+    status_choice = ((0, '下架'), (1, '上架'))
+    imgUrl = models.CharField(max_length=100, verbose_name='图片地址')
+    status = models.SmallIntegerField(choices=status_choice, default=1)
+
+    class Meta:
+        db_table='img_file'
+        verbose_name = '图片附件表'
+        verbose_name_plural = verbose_name
