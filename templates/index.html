@@ -36,7 +36,8 @@
         <div class="slide fl">
             <ul class="slide_pics">
                 {% for banner in goodsBanner %}
-                    <li><a href="{{ banner.url }}"><img src="{{ banner.imgurl }}" alt="幻灯片"></a></li>
+                    {% comment %}首页轮播商品点击进入对应的商品详情,并且需要商品id的标识{% endcomment %}
+                    <li><a href="{% url 'goods:detail' banner.sku.id %}"><img src="{{ banner.imgurl }}" alt="幻灯片"></a></li>
                 {% endfor %}
                 {#                <li><img src="../static/images/slide02.jpg" alt="幻灯片"></li>#}
                 {#                <li><img src="../static/images/slide03.jpg" alt="幻灯片"></li>#}
@@ -60,7 +61,7 @@
                 <div class="subtitle fl">
                     <span>|</span>
                     {% for banner in type.textBanner %}
-                        <a href="#">{{ banner.sku.goodName }}</a>
+                        <a href="{% url 'goods:detail' banner.sku.id %}">{{ banner.sku.goodName }}</a>
                     {% endfor %}
                     {#                    <a href="#">加州提子</a>#}
                     {#                    <a href="#">亚马逊牛油果</a>#}
@@ -73,8 +74,8 @@
                 <ul class="goods_list fl">
                     {% for banner in type.imgBanner %}
                         <li>
-                            <h4><a href="#">{{ banner.sku.goodName }}</a></h4>
-                            <a href="#"><img src="{{ banner.sku.imgGuid.imgUrl }}"></a>
+                            <h4><a href="{% url 'goods:detail' banner.sku.id %}">{{ banner.sku.goodName }}</a></h4>
+                            <a href="{% url 'goods:detail' banner.sku.id %}"><img src="{{ banner.sku.imgGuid.imgUrl }}"></a>
                             <div class="prize">¥ {{ banner.sku.price }}</div>
                         </li>
                     {% endfor %}

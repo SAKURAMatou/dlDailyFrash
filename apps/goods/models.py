@@ -1,3 +1,5 @@
+import uuid
+
 from tinymce.models import HTMLField
 
 from db.Base_model import *
@@ -57,6 +59,7 @@ class AttachFiles(BaseModel):
     status_choice = ((0, '下架'), (1, '上架'))
     imgUrl = models.CharField(max_length=100, verbose_name='图片地址')
     status = models.SmallIntegerField(choices=status_choice, default=1)
+    guid = models.UUIDField(primary_key=True, max_length=50, verbose_name='图片主键', default=uuid.uuid4())
 
     class Meta:
         db_table = 'dl_img_file'
@@ -106,6 +109,6 @@ class IndexPromotionBanner(BaseModel):
     index = models.SmallIntegerField(default=0, verbose_name='展示顺序')
 
     class Meta:
-        db_table = 'df_index_promotion'
+        db_table = 'dl_index_promotion'
         verbose_name = "主页促销活动"
         verbose_name_plural = verbose_name

@@ -3,5 +3,6 @@ from apps.goods import views as goodsView
 
 urlpatterns = [
     path('', goodsView.indexView.as_view()),
-    path("index", goodsView.indexView.as_view(), name='index')
+    path("index", goodsView.indexView.as_view(), name='index'),
+    path('detail/<str:goodId>', goodsView.goodsDetail.as_view(), name='detail')
 ]

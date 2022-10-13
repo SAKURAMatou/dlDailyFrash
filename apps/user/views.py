@@ -48,7 +48,7 @@ def postUserRegister(request):
     user.is_active = 0
     user.save()
     #
-    senActiveEmail(user)
+    # senActiveEmail(user)
     print(user_name, pwd, email, allow)
 
     return redirect(reverse('user:login'))
@@ -172,9 +172,10 @@ class userInfo(View):
         # 获取用户的默认收货地
         user = request.user
         address = Address.objects.get_defult_address(user.id)
-        user.receiver = address.receiver
-        user.re_address = address.re_address
-        user.re_phone = address.re_phone
+        if address is not  None:
+            user.receiver = address.receiver
+            user.re_address = address.re_address
+            user.re_phone = address.re_phone
         return render(request, 'user_center_info.html', {"page": "info"})
 
 
