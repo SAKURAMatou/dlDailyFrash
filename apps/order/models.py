@@ -26,10 +26,11 @@ class OrderInfo(BaseModel):
 class OrderGoods(BaseModel):
     '''订单商品表'''
     guid = models.UUIDField(primary_key=True, max_length=50, verbose_name='订单中的商品信息主键，使用UUID')
-    orderGuid = models.ForeignKey(OrderInfo, on_delete=models.CASCADE, verbose_name='对应订单主键')
-    skuCount = models.IntegerField(default=0, verbose_name='商品数量')
-    skuPrice = models.DecimalField(decimal_places=2, max_digits=10, verbose_name='商品单价')
-    comment = models.CharField(max_length=500, verbose_name='商品评论')
+    orderGuid = models.ForeignKey(OrderInfo, default=None, null=True, on_delete=models.CASCADE, verbose_name='对应订单主键')
+    skuCount = models.IntegerField(default=0, null=True, verbose_name='商品数量')
+    skuPrice = models.DecimalField(decimal_places=2, max_digits=10, default=None, null=True, verbose_name='商品单价')
+    comment = models.CharField(max_length=500, default=None, null=True, verbose_name='商品评论')
+    skuGuid = models.CharField(max_length=50, default=None, null=True, verbose_name='订单对应的商品guid')
 
     class Meta:
         db_table = 'dl_order_goods'

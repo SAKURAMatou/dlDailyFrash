@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django_redis import get_redis_connection
 
@@ -48,16 +48,35 @@ class goodsDetail(View):
     '''商品详情页面'''
 
     def get(self, request, goodId):
-        user = request.user
-        if user.is_authenticated:
-            #     设置本次浏览历史
-            redisConn = get_redis_connection('default')
-            historyKey = f'history_{user.id}'
-            # 先把当前商品删除，防止多次出现
-            redisConn.lrem(historyKey, 0, goodId)
-            # 再添加进列表
-            redisConn.lpush(historyKey, goodId)
-            # 防止数据过多需要限制列表的长度
-            redisConn.ltrim(historyKey, 0, 4)
+        # 根据id获取商品详情
+        goodDetail = GoodsModels.GoodsSKU.objects.filter(id=goodId).first()
+        if goodDetail is None:
+            # 当id对应的数据不存在时返回首页
+            return redirect('goods:index')
 
-        return render(request, 'detail_goods.html')
+        user = request.user
+        # 设置用户的浏览记录
+        setUserLookHistory(user, goodId)
+        # 获取类别
+        goodsType = GoodsModels.GoodsType.objects.all()
+        # 尝试自己查询数据
+        goodDetail.imgUrl = GoodsModels.GoodsSKU.objects.get_imgUrl(goodDetail.imgGuid.guid)
+
+        # 商品详情页的推荐使用相同类型的新添加商品
+        newSku = GoodsModels.GoodsSKU.objects.get_new(goodDetail)
+        # 手动获取商品对应的大类spu的详情、
+        goodDetail.detail1 = GoodsModels.GoodsSKU.objects.get_detail(goodDetail)
+        return render(request, 'detail.html', {'types': goodsType, 'goodDetail': goodDetail, 'newSku': newSku})
+
+
+def setUserLookHistory(user, goodId):
+    if user.is_authenticated:
+        #     设置本次浏览历史
+        redisConn = get_redis_connection('default')
+        historyKey = f'history_{user.id}'
+        # 先把当前商品删除，防止多次出现
+        redisConn.lrem(historyKey, 0, goodId)
+        # 再添加进列表
+        redisConn.lpush(historyKey, goodId)
+        # 防止数据过多需要限制列表的长度
+        redisConn.ltrim(historyKey, 0, 4)

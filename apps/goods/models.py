@@ -2,6 +2,7 @@ import uuid
 
 from tinymce.models import HTMLField
 
+# from apps.goods.GoodsManager import GoodsSKUManeger
 from db.Base_model import *
 
 
@@ -21,20 +22,36 @@ class GoodsType(BaseModel):
         verbose_name_plural = verbose_name
 
 
+class GoodsSKUManeger(models.Manager):
+    def get_imgUrl(self, imgGuid):
+        # print(self)
+        img = AttachFiles.objects.filter(guid=imgGuid).first()
+        return img.imgUrl if img is not None else ""
+
+    def get_new(self, goodDetail):
+        return self.filter(priceUnit=goodDetail.goodType.id).exclude(id=goodDetail.id).order_by("update_time")
+
+    def get_detail(self, goodDetail):
+        spu = GoodsSPU.objects.filter(id=goodDetail.spuGuid).first()
+        return spu.detail if spu is not None else ""
+
+
 class GoodsSKU(BaseModel):
     '''具体的商品表实体类'''
     status_choice = ((0, '下架'), (1, '上架'))
     priceUnit_choice = ((1, '元'), (2, '美元'), (3, '港币'))
-    goodName = models.CharField(max_length=50, verbose_name='商品名称')
-    goodIntorduction = models.CharField(max_length=500, verbose_name='商品简介')
+    goodName = models.CharField(max_length=50, default=None, null=True, verbose_name='商品名称')
+    goodIntorduction = models.CharField(max_length=500, default=None, null=True, verbose_name='商品简介')
     price = models.DecimalField(decimal_places=2, max_digits=8, verbose_name='价格')
     priceUnit = models.SmallIntegerField(choices=priceUnit_choice, default=1, verbose_name='价格单位')
     stock = models.IntegerField(default=1, verbose_name='库存')
     status = models.SmallIntegerField(default=1, choices=status_choice, verbose_name='商品状态')
-    goodType = models.ForeignKey('GoodsType', on_delete=models.DO_NOTHING, verbose_name='商品种类')
+    goodType = models.ForeignKey('GoodsType', default=None, null=True, on_delete=models.DO_NOTHING, verbose_name='商品种类')
     saleCount = models.IntegerField(default=0, verbose_name='商品销量')
-    imgGuid = models.ForeignKey('AttachFiles', on_delete=models.DO_NOTHING,
+    imgGuid = models.ForeignKey('AttachFiles', default=None, null=True, on_delete=models.DO_NOTHING,
                                 verbose_name='图片id')  # 一个商品可以由多个图片；同一个id关联图片信息表
+    spuGuid = models.IntegerField(blank=True, default=0, verbose_name='商品对应的spu主键')
+    objects = GoodsSKUManeger()
 
     class Meta:
         db_table = 'dl_goods_sku'
@@ -44,7 +61,7 @@ class GoodsSKU(BaseModel):
 
 class GoodsSPU(BaseModel):
     '''商品spu表'''
-    name = models.CharField(max_length=50, verbose_name="商品spu名称")
+    name = models.CharField(max_length=50, default=None, null=True, verbose_name="商品spu名称")
     # detail = models.CharField(max_length=500, verbose_name='商品详情')
     detail = HTMLField(blank=True, verbose_name='商品详情')
 
