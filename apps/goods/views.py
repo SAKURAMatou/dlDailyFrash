@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django_redis import get_redis_connection
+from  django.core.paginator import Paginator
 
+from apps.goods import view_method as viewMethod
 from apps.goods import models as GoodsModels
 
 
@@ -56,7 +58,7 @@ class goodsDetail(View):
 
         user = request.user
         # 设置用户的浏览记录
-        setUserLookHistory(user, goodId)
+        viewMethod.setUserLookHistory(user, goodId)
         # 获取类别
         goodsType = GoodsModels.GoodsType.objects.all()
         # 尝试自己查询数据
@@ -69,14 +71,16 @@ class goodsDetail(View):
         return render(request, 'detail.html', {'types': goodsType, 'goodDetail': goodDetail, 'newSku': newSku})
 
 
-def setUserLookHistory(user, goodId):
-    if user.is_authenticated:
-        #     设置本次浏览历史
-        redisConn = get_redis_connection('default')
-        historyKey = f'history_{user.id}'
-        # 先把当前商品删除，防止多次出现
-        redisConn.lrem(historyKey, 0, goodId)
-        # 再添加进列表
-        redisConn.lpush(historyKey, goodId)
-        # 防止数据过多需要限制列表的长度
-        redisConn.ltrim(historyKey, 0, 4)
+class goodsList(View):
+
+    def get(self, request, goodType):
+        # 获取类别
+        goodsType = GoodsModels.GoodsType.objects.all()
+        pageIndex = 0 if request.GET.get("pageIndex") is None else request.Get.get("pageIndex")
+        pageSize = 0 if request.GET.get("pageSize") is None else request.Get.get("pageSize")
+        orderType = 0 if request.GET.get("orderType") is None else request.Get.get("orderType")
+        sortType = viewMethod.getSortType(request.Get.get("sortType"))
+
+
+
+        return render(request, 'list_goods.html')
