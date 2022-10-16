@@ -21,7 +21,7 @@ def setUserLookHistory(user, goodId):
 LIST_SORT = (('0', 'create_time'), ('1', 'price'), ('2', 'saleCount'))
 
 
-def getSortType(key):
+def getSKUSortFile(key):
     '''默认按价格排序'''
     for t in LIST_SORT:
         if t[0] == key:

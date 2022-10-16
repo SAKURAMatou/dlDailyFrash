@@ -29,11 +29,19 @@ class GoodsSKUManeger(models.Manager):
         return img.imgUrl if img is not None else ""
 
     def get_new(self, goodDetail):
-        return self.filter(priceUnit=goodDetail.goodType.id).exclude(id=goodDetail.id).order_by("update_time")
+        return self.filter(goodType=goodDetail.goodType).exclude(id=goodDetail.id).order_by("update_time")[:3]
+
+    def get_new_type(self, goodTypeId):
+        return self.filter(goodType_id=goodTypeId).order_by("update_time")[:3]
 
     def get_detail(self, goodDetail):
         spu = GoodsSPU.objects.filter(id=goodDetail.spuGuid).first()
         return spu.detail if spu is not None else ""
+
+    def get_goodList_show(self, goodType, sortFile):
+        '''获取商品列表的展示内容'''
+        query_set = self.filter(goodType=goodType, status=1).order_by(sortFile)
+        return query_set if query_set is not None else []
 
 
 class GoodsSKU(BaseModel):

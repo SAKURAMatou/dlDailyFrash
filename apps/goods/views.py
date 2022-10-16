@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django_redis import get_redis_connection
-from  django.core.paginator import Paginator
+from django.core.paginator import Paginator
 
 from apps.goods import view_method as viewMethod
 from apps.goods import models as GoodsModels
@@ -74,13 +74,33 @@ class goodsDetail(View):
 class goodsList(View):
 
     def get(self, request, goodType):
+        # 判断goodType是否存在对应的类型
+        type = GoodsModels.GoodsType.objects.filter(id=goodType).first()
+        if type is None:
+            return redirect('goods:index')
         # 获取类别
-        goodsType = GoodsModels.GoodsType.objects.all()
-        pageIndex = 0 if request.GET.get("pageIndex") is None else request.Get.get("pageIndex")
-        pageSize = 0 if request.GET.get("pageSize") is None else request.Get.get("pageSize")
-        orderType = 0 if request.GET.get("orderType") is None else request.Get.get("orderType")
-        sortType = viewMethod.getSortType(request.Get.get("sortType"))
+        goodsTypeAll = GoodsModels.GoodsType.objects.all()
+        pageIndex = 1 if request.GET.get("pageIndex") is None else request.GET.get("pageIndex")
+        pageSize = 10 if request.GET.get("pageSize") is None else request.GET.get("pageSize")
+        orderType = 0 if request.GET.get("orderType") is None else request.GET.get("orderType")
+        sortFile = viewMethod.getSKUSortFile(request.GET.get("sortType"))
+        # 获取数据
+        list = GoodsModels.GoodsSKU.objects.get_goodList_show(goodType, sortFile)
+        pager = Paginator(list, pageSize)
+        pager = pager.get_page(pageIndex)
+        # pager.object_list  分页之后是数据列表
+        print(pager.paginator.page_range)
+        print(pager.number)
+        print("上一页", pager.has_previous())
+        print("下一页", pager.has_next())
+        if pager.has_previous():
+            print(pager.previous_page_number(), 'previous_page_number')
+        if pager.has_next():
+            print(pager.next_page_number(), 'next_page_number')
 
+        # 商品详情页的推荐使用相同类型的新添加商品
+        newSku = GoodsModels.GoodsSKU.objects.get_new_type(goodType)
 
+        context = {'types': goodsTypeAll, 'type': type, 'newSku': newSku, 'pager': pager}
 
-        return render(request, 'list_goods.html')
+        return render(request, 'list.html', context)
