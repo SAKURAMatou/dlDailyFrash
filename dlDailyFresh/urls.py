@@ -30,5 +30,6 @@ urlpatterns = [
     path('user/', include(('user.urls', 'user'), namespace='user')),  # 用户模块
     path('car/', include(('car.urls', 'car'), namespace='car')),  # 购物车模块
     path('order/', include(('order.urls', 'order'), namespace='order')),  # 订单模块
-    path('goods/', include(('goods.urls', 'goods'), namespace='goods'))  # 商品模块
+    path('goods/', include(('goods.urls', 'goods'), namespace='goods')),  # 商品模块
+    path("fullSearch", include(('haystack.urls', 'haystack'), namespace='search'))  # 全文检索
 ]

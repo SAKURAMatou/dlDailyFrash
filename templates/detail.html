@@ -2,10 +2,6 @@
 {% load static %}
 {% block title %}天天生鲜-商品详情{% endblock title %}
 
-
-
-
-
 {% block main_content %}
 
     <div class="breadcrumb">
@@ -30,16 +26,16 @@
                     {% else %}
                         $
                     {% endif %}
-                    <em>{{ goodDetail.price }}</em>
+                    <em id="price">{{ goodDetail.price }}</em>
                 </span>
                 <span class="show_unit">单  位：500g</span>
             </div>
             <div class="goods_num clearfix">
                 <div class="num_name fl">数 量：</div>
                 <div class="num_add fl">
-                    <input type="text" class="num_show fl" value="1">
-                    <a href="javascript:;" class="add fr">+</a>
-                    <a href="javascript:;" class="minus fr">-</a>
+                    <input type="text" id="num_show" class="num_show fl" value="1">
+                    <a href="javascript:;" class="buyCount add fr">+</a>
+                    <a href="javascript:;" class="buyCount minus fr">-</a>
                 </div>
             </div>
             <div class="total">总价：<em>16.80元</em></div>
@@ -93,28 +89,6 @@
 {% endblock main_content %}
 {# 网页底部引入文件块 #}
 {% block bottomfiles %}
-
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
-    <script type="text/javascript">
-        var $add_x = $('#add_cart').offset().top;
-        var $add_y = $('#add_cart').offset().left;
-
-        var $to_x = $('#show_count').offset().top;
-        var $to_y = $('#show_count').offset().left;
-
-        $(".add_jump").css({'left': $add_y + 80, 'top': $add_x + 10, 'display': 'block'})
-        $('#add_cart').click(function () {
-            $(".add_jump").stop().animate({
-                    'left': $to_y + 7,
-                    'top': $to_x + 7
-                },
-                "fast", function () {
-                    $(".add_jump").fadeOut('fast', function () {
-                        $('#show_count').html(2);
-                    });
-
-                });
-        })
-    </script>
-
+    <script type="text/javascript" src="/static/js/goodDetail.js"></script>
 {% endblock bottomfiles %}
