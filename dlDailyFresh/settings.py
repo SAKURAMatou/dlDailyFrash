@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tinymce',  # 富文本编辑器
+    'haystack',  # 全文检索框架
     'car',
     'goods',
     'order',
@@ -165,3 +166,14 @@ SESSION_CACHE_ALIAS = "default"
 LOGIN_URL = '/user/login'
 
 DEFAULT_FILE_STORAGE = 'db.MinioClientUtil.DjangoToMinio'
+
+# 全文检索框架的配置
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        #使用whoosh引擎
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        # 'ENGINE': 'haystack.backends.whoosh_cn_backend.WhooshEngine',
+        #索引文件路径 存放索引目录
+        'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
+    }
+}

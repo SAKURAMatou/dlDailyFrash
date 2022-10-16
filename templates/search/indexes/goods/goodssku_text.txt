@@ -1,0 +1,5 @@
+#指定表中需要建立索引的字段
+{{object.goodName}} #根据商品名称
+{{object.goodIntorduction}} #根据商品简介
+#需要其他表的话，可以通过外键关联直接获取
+#{{object.imgGuid.imgname}}
