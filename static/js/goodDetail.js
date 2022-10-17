@@ -38,3 +38,20 @@ $('#add_cart').click(function () {
 
         });
 })
+
+//添加购物车方法
+function addCar() {
+    var goodId = $("#add_cart").data("goodId")
+    var goodCount = $("#num_show").val()
+    console.log(goodId, goodCount)
+    $ajax({
+        'url':'',
+        dataType: 'json',
+        method: 'POST',
+        data:{"goodId":goodId,"goodCount":goodCount},
+        success:function (data){
+
+        }
+    })
+}
+
