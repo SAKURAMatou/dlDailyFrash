@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from itsdangerous import URLSafeTimedSerializer
 
+from commonUtil import DlUtil
 from db.MinioClientUtil import MinioClient
 from .models import Address
 import re
@@ -129,6 +130,7 @@ class userLogin(View):
         user = authenticate(username=username, password=pwd)
         if user is not None:
             login(request, user)
+            user.car_count = DlUtil.getUserCountInCar(user.id)
             # 判断是否需要记录用户名
             remember = request.POST.get('remember')
             # 获取登录后所要跳转到的地址
@@ -172,7 +174,7 @@ class userInfo(View):
         # 获取用户的默认收货地
         user = request.user
         address = Address.objects.get_defult_address(user.id)
-        if address is not  None:
+        if address is not None:
             user.receiver = address.receiver
             user.re_address = address.re_address
             user.re_phone = address.re_phone

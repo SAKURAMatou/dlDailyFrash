@@ -1,11 +1,16 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from db.Base_model import BaseModel
+from commonUtil import DlUtil
 
 
 # Create your models here.
 
 class User(AbstractUser, BaseModel):
+    # def __init__(self):
+    #     super()
+    #     self.car_count = DlUtil.getUserCountInCar(self.id)
+
     class Meta:
         db_table = 'dl_user'  # 指定表表名
         verbose_name = '用户'

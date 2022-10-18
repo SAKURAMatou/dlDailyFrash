@@ -56,7 +56,11 @@
         </div>
         <div class="guest_cart fr">
             <a href="#" class="cart_name fl">我的购物车</a>
-            <div class="goods_count fl" id="show_count">{{ car_count }}</div>
+            {% if user.car_count %}
+                <div class="goods_count fl" id="show_count">{{ user.car_count }}</div>
+            {% else %}
+                <div class="goods_count fl" id="show_count">{{ car_count }}</div>
+            {% endif %}
         </div>
     </div>
 {% endblock search_bar %}

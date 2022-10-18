@@ -35,8 +35,7 @@ class indexView(View):
         # 判断用户是否登录
         user = request.user
         if user.is_authenticated:
-            redisConn = get_redis_connection('default')
-            car_count = redisConn.hlen(f'car_{user.id}')
+            car_count = DlUtil.getUserCountInCar(user.id)
 
         context = {
             'goodsType': goodsType,
