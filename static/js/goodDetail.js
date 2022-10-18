@@ -44,12 +44,19 @@ function addCar() {
     var goodId = $("#add_cart").data("goodId")
     var goodCount = $("#num_show").val()
     console.log(goodId, goodCount)
-    $ajax({
-        'url':'',
+    $.ajax({
+        'url': '',
         dataType: 'json',
         method: 'POST',
-        data:{"goodId":goodId,"goodCount":goodCount},
-        success:function (data){
+        data: {"goodId": goodId, "goodCount": goodCount},
+        success: function (data) {
+            if (data.code == 1) {
+                //添加成功！
+                // 修改购物车商品数量
+
+            } else {
+                alert(data.msg)
+            }
 
         }
     })
