@@ -41,18 +41,32 @@ $('#add_cart').click(function () {
 
 //添加购物车方法
 function addCar() {
-    var goodId = $("#add_cart").data("goodId")
+    var goodId = $("#add_cart").data("goodid")
     var goodCount = $("#num_show").val()
+    csrf = $("#add_cart").prev().val()
     console.log(goodId, goodCount)
     $.ajax({
-        'url': '',
+        'url': '/car/addCar',
         dataType: 'json',
         method: 'POST',
-        data: {"goodId": goodId, "goodCount": goodCount},
+        data: {"goodId": goodId, "goodCount": goodCount, "csrfmiddlewaretoken": csrf},
         success: function (data) {
             if (data.code == 1) {
                 //添加成功！
                 // 修改购物车商品数量
+                $(".add_jump").css({'left': $add_y + 80, 'top': $add_x + 10, 'display': 'block'})
+                $(".add_jump").stop().animate({
+                        'left': $to_y + 7,
+                        'top': $to_x + 7
+                    },
+                    "fast", function () {
+                        $(".add_jump").fadeOut('fast', function () {
+                            // 重新设置用户购物车中商品的条目数
+                            data=data.data
+                            // console.log(data)
+                            $('#show_count').html(data.nowCount);
+                        });
+                    });
 
             } else {
                 alert(data.msg)

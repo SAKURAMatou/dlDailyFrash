@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 
 from apps.goods import view_method as viewMethod
 from apps.goods import models as GoodsModels
+from commonUtil import DlUtil
 
 
 # Create your views here.
@@ -58,7 +59,7 @@ class goodsDetail(View):
 
         user = request.user
         # 设置用户的浏览记录
-        viewMethod.setUserLookHistory(user, goodId)
+        DlUtil.setUserLookHistory(user, goodId)
         # 获取类别
         goodsType = GoodsModels.GoodsType.objects.all()
         # 尝试自己查询数据
@@ -68,7 +69,10 @@ class goodsDetail(View):
         newSku = GoodsModels.GoodsSKU.objects.get_new(goodDetail)
         # 手动获取商品对应的大类spu的详情、
         goodDetail.detail1 = GoodsModels.GoodsSKU.objects.get_detail(goodDetail)
-        return render(request, 'detail.html', {'types': goodsType, 'goodDetail': goodDetail, 'newSku': newSku})
+        # 获取用户购物车订单数
+        countInCar = DlUtil.getUserCountInCar(user.id)
+        return render(request, 'detail.html',
+                      {'types': goodsType, 'goodDetail': goodDetail, 'newSku': newSku, 'car_count': countInCar})
 
 
 class goodsList(View):

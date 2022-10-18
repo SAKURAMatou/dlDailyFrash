@@ -41,6 +41,7 @@
             <div class="total">总价：<em>16.80元</em></div>
             <div class="operate_btn">
                 <a href="javascript:;" class="buy_btn">立即购买</a>
+                {% csrf_token %}
                 <a href="javascript:;" onclick="addCar()" class="add_cart" data-goodId="{{ goodDetail.id }}"
                    id="add_cart">加入购物车</a>
             </div>
@@ -88,6 +89,9 @@
         </div>
     </div>
 {% endblock main_content %}
+{% block bottom %}
+	<div class="add_jump"></div>
+{% endblock bottom %}
 {# 网页底部引入文件块 #}
 {% block bottomfiles %}
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>

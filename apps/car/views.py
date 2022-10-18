@@ -31,6 +31,7 @@ class CarView(View):
         # 先判断当前商品是否在购物车中有，有的话数量相加，没有的话添加记录
         checkGoodInCarCount = redisConn.hget(carKey, goodId)
         if checkGoodInCarCount is not None:
-            checkGoodInCarCount += goodCount
-        redisConn.hset(carKey, goodId)
-        return DlUtil.makeJsonResponse('1', '添加成功！', {"nowCount": checkGoodInCarCount})
+            goodCount += int(checkGoodInCarCount)
+        redisConn.hset(carKey, goodId, goodCount)
+        countInCar = DlUtil.getUserCountInCar(request.user.id)
+        return DlUtil.makeJsonResponse('1', '添加成功！', {"nowCount": countInCar})
