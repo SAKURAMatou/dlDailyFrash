@@ -55,7 +55,7 @@
             </form>
         </div>
         <div class="guest_cart fr">
-            <a href="#" class="cart_name fl">我的购物车</a>
+            <a href="{% url 'car:myCar' %}" class="cart_name fl">我的购物车</a>
             {% if user.car_count %}
                 <div class="goods_count fl" id="show_count">{{ user.car_count }}</div>
             {% else %}

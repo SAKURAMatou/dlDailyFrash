@@ -1,6 +1,7 @@
 from django.urls import path, include
-from apps.car.views import CarView
+from apps.car import views as CarViews
 
 urlpatterns = [
-    path('addCar', CarView.as_view(), name='addCar')
+    path('addCar', CarViews.CarView.as_view(), name='addCar'),
+    path("myCar", CarViews.myCar.as_view(), name='myCar')  # 我的购物车页面
 ]

@@ -28,3 +28,12 @@ def setUserLookHistory(user, goodId):
         redisConn.lpush(historyKey, goodId)
         # 防止数据过多需要限制列表的长度
         redisConn.ltrim(historyKey, 0, 4)
+
+
+def getUserCarList(userId):
+    '''
+    获取用户购物车中商品列表
+    '''
+    redisConn = get_redis_connection('default')
+    key = f'car_user_{userId}'
+    return redisConn.hgetall(key)
