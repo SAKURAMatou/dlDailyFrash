@@ -59,8 +59,8 @@ class myCar(View):
                 good.count = int(value)
                 # django-redis获取到的数字都是btye类型，需要通过decode方法转成字符串；
                 # 商品价格是decimal类型，需要通过decimal.Decimal进行护转化，否则无法和float int进行直接运算
-                good.amount = decimal.Decimal(value.decode()) * good.price
-
+                # good.amount = decimal.Decimal(value.decode()) * good.price
+                good.amount = good.value * good.price
                 res.append(good)
                 # 计算总商品数，总价
                 totalCount += good.count
