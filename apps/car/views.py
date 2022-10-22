@@ -1,4 +1,5 @@
 import decimal
+from functools import reduce
 
 from django.shortcuts import render
 from django.views import View
@@ -151,8 +152,10 @@ class deleteGood(View):
 
 def getTotalCount(redisConn, carKey):
     '''计算商品总数，入参redisConn,key'''
-    carList = redisConn.hgetall(carKey)
-    total = 0
-    for key, value in carList.items():
-        total += int(value)
-    return total
+    # carList = redisConn.hgetall(carKey)
+    val = redisConn.hvals(carKey)
+    return reduce(lambda a, b: int(a) + int(b), val)
+    # total = 0
+    # for key, value in carList.items():
+    #     total += int(value)
+    # return total
