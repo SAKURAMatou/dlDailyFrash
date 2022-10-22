@@ -77,8 +77,12 @@ class goodInCarCountChange(View):
         post = request.POST
         goodId = post.get('goodid')
         newCount = post.get("newcount")
-        if all([goodId, newCount]):
+        totalPrice = post.get("totalPrice")
+        if not all([goodId, newCount, totalPrice]):
             return DlUtil.makeJsonResponse(msg='缺少必填项！')
+        # 字符串转数字
+        newCount = int(newCount)
+        totalPrice = decimal.Decimal(totalPrice)
         # 校验商品是否存在
         good = GoodsSKU.objects.filter(id=goodId).first()
         if good is None:
@@ -86,6 +90,7 @@ class goodInCarCountChange(View):
         # 判断商品库存是否够
         if newCount > good.stock:
             return DlUtil.makeJsonResponse(msg='商品库存不足！')
+
         # 商品数量足够时修改购物车中对应商品数量
         redisConn = get_redis_connection('default')
         carKey = f'car_user_{request.user.id}'
@@ -94,8 +99,60 @@ class goodInCarCountChange(View):
         if checkGoodInCarCount is None:
             return DlUtil.makeJsonResponse(msg='错误，购物车中没有该商品，请手动添加')
 
-        checkGoodInCarCount = newCount
-        redisConn.hset(carKey, goodId, checkGoodInCarCount)
-        countInCar = DlUtil.getUserCountInCar(request.user.id)
-        # TODO 购物车内商品总价，共计如何修改
-        return DlUtil.makeJsonResponse(1, '修改成功！', {"countInCar": countInCar})
+        checkGoodInCarCount = int(checkGoodInCarCount)
+        if checkGoodInCarCount > newCount:
+            # 新的商品数小于之前数据表示减少
+            totalPrice -= good.price
+        else:
+            totalPrice += good.price
+
+        redisConn.hset(carKey, goodId, newCount)
+
+        # TODO 购物车内商品总价，共计如何修改？总价的计算需要查库，获取商品对象，故页面展示的总价等通过js实现
+        # 返回总数，以及商品价格
+        totalCount = getTotalCount(redisConn, carKey)
+
+        return DlUtil.makeJsonResponse(1, '修改成功！',
+                                       {"totalPrice": str(totalPrice.quantize(decimal.Decimal("0.00"))),
+                                        "totalCount": totalCount, "price": good.price})
+
+
+class deleteGood(View):
+    def post(self, request):
+        '''购物车中商品删除'''
+        post = request.POST
+        goodId = post.get('goodid')
+        totalPrice = post.get("totalPrice")
+
+        if not all([goodId, totalPrice]):
+            return DlUtil.makeJsonResponse(msg='缺少必填项！')
+
+        totalPrice = decimal.Decimal(totalPrice)
+        good = GoodsSKU.objects.filter(id=goodId).first()
+        if good is None:
+            return DlUtil.makeJsonResponse(msg='商品错误！')
+
+        redisConn = get_redis_connection('default')
+        carKey = f'car_user_{request.user.id}'
+        # 查找现在购物车中的商品的数量
+        nowCount = redisConn.hget(carKey, goodId)
+        if nowCount is None:
+            return DlUtil.makeJsonResponse(msg='购物车中不存在该商品，无需删除！')
+        nowCount = int(nowCount)
+        # 计算商品删除之后的总价
+        totalPrice -= good.price * nowCount
+        redisConn.hdel(carKey, goodId)
+        # 计算删除之后的总商品数
+        totalCount = getTotalCount(redisConn, carKey)
+
+        return DlUtil.makeJsonResponse(1, '商品删除成功！',
+                                       {"totalPrice": str(totalPrice), "totalCount": totalCount})
+
+
+def getTotalCount(redisConn, carKey):
+    '''计算商品总数，入参redisConn,key'''
+    carList = redisConn.hgetall(carKey)
+    total = 0
+    for key, value in carList.items():
+        total += int(value)
+    return total
