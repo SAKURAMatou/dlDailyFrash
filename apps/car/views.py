@@ -67,9 +67,10 @@ class myCar(View):
                 totalCount += good.count
                 totalPrice += good.amount
 
-        return render(request, 'car_car.html',
+        car_count = DlUtil.getUserCountInCar(request.user.id)
+        return render(request, 'car.html',
                       {'carList': res, 'totalCount': totalCount,
-                       'totalPrice': str(totalPrice.quantize(decimal.Decimal("0.00")))})
+                       'totalPrice': str(totalPrice.quantize(decimal.Decimal("0.00"))), 'car_count': car_count})
 
 
 class goodInCarCountChange(View):

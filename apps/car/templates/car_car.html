@@ -60,7 +60,7 @@
 {% for carItem in carList %}
     <ul class="cart_list_td clearfix" id="{{ carItem.id }}">
         <li class="col01"><input type="checkbox" name="checkId" checked></li>
-        <li class="col02"><img src="/static/images/goods/goods012.jpg"></li>
+        <li class="col02"><img src="{{ carItem.imgGuid.imgUrl }}"></li>
         <li class="col03">{{ carItem.goodName }}<br><em>{{ carItem.price }}元/500g</em></li>
         <li class="col04">500g</li>
         <li class="col05">{{ carItem.price }}元</li>
