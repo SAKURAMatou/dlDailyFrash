@@ -16,6 +16,7 @@ class OrderInfo(BaseModel):
     payGoods = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, verbose_name="订单商品总金额")
     payTraffic = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, verbose_name="订单运费")
     status = models.SmallIntegerField(choices=OrderInfo_status, default=0, verbose_name='订单状态')
+    tradeNo = models.CharField(max_length=50, blank=True, default=None, verbose_name='订单编号')
 
     class Meta:
         db_table = 'dl_order_info'

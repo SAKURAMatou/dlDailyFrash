@@ -147,3 +147,18 @@ $(".good_delete").on('click', 'a', function () {
     var goodId = $(this).parent().parent().attr("id")
     goodCountDelete(goodId)
 })
+
+function commitOrder() {
+    // 提交购物车;需要提交选中的商品的id
+    var checked = $(".cart_list_td").find(':checked')
+    var ids = []
+    checked.each(function (i, t) {
+        ids.push($(t).data('goodid'))
+    })
+    // $.post('/order/commitOrder', {"goods": JSON.stringify(ids), "csrfmiddlewaretoken": crsfToken}, function (data) {
+    //     console.log(data)
+    // })
+    //有type=checkbox 表单提交的时候只提交了选中的checkbox
+    document.getElementById("order").submit()
+
+}
