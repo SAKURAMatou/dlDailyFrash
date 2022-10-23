@@ -91,7 +91,7 @@ class userRegisterView(View):
 
 # 用户激活模块
 class userActive(View):
-    @transaction.auto
+    @transaction.atomic
     def get(self, request, token):
         # 解密
         serializer = URLSafeTimedSerializer(settings.SECRET_KEY)

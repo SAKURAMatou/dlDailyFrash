@@ -117,8 +117,12 @@
                 'goods': goods,
                 "csrfmiddlewaretoken": crsfToken
             }
-            $.post('commit',data, function (data) {
+            $.post('commit', data, function (data) {
                 console.log(data)
+                if (data.code == 1) {
+                    //订单提交成功！
+                    afterCommitOrder()
+                }
             })
         });
 

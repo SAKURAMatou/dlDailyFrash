@@ -57,16 +57,18 @@ class commitOrder(View):
             good = GoodsSKU.objects.filter(id=goodId).first()
             if good is not None:
                 value = redisConn.hget(carKey, goodId)
-                # 保存商品数量，计算小计=商品单价*数量
-                good.count = int(value)
-                # django-redis获取到的数字都是btye类型，需要通过decode方法转成字符串；
-                # 商品价格是decimal类型，需要通过decimal.Decimal进行护转化，否则无法和float int进行直接运算
-                # good.amount = decimal.Decimal(value.decode()) * good.price
-                good.amount = good.count * good.price
-                res.append(good)
-                # 计算总商品数，总价
-                totalCount += good.count
-                totalPrice += good.amount
+                if value:
+                    # 保存商品数量，计算小计=商品单价*数量
+                    good.count = int(value)
+                    # django-redis获取到的数字都是btye类型，需要通过decode方法转成字符串；
+                    # 商品价格是decimal类型，需要通过decimal.Decimal进行护转化，否则无法和float int进行直接运算
+                    # good.amount = decimal.Decimal(value.decode()) * good.price
+                    good.amount = good.count * good.price
+                    res.append(good)
+                    # 计算总商品数，总价
+                    totalCount += good.count
+                    totalPrice += good.amount
+
         # 获取用户的默认收货地
         # defaultAddress = Address.objects.get_defult_address(user.id)
         addressList = Address.objects.all()
@@ -103,11 +105,11 @@ class commit(View):
 
         # 必填项验证
         if not all([addressId, payWay, goods]):
-            return DlUtil.makeJsonResponse('缺少必填项！')
+            return DlUtil.makeJsonResponse(msg='缺少必填项！')
         # 校验收货地址是否存在
         address = Address.objects.filter(id=addressId).first()
         if not address:
-            return DlUtil.makeJsonResponse('收货地址异常！')
+            return DlUtil.makeJsonResponse(msg='收货地址异常！')
         # 校验支付方式
         flag = False
         payWay = int(payWay)
@@ -116,7 +118,7 @@ class commit(View):
                 flag = True
                 break
         if not flag:
-            return DlUtil.makeJsonResponse('支付方法错误！')
+            return DlUtil.makeJsonResponse(msg='支付方法错误！')
 
         # 创建订单
         # 获取购物车内的商品信息
@@ -126,20 +128,23 @@ class commit(View):
         totalCount = 0
         totalPrice = decimal.Decimal()
         # 后期本次订单中的商品信息，包含商品的数量
-        for goodId in goods:
-            good = GoodsSKU.objects.filter(id=goodId).first()
-            if good:
-                value = redisConn.hget(carKey, goodId)
-                if value:
-                    good.count = int(value)
-                    totalCount += good.count
-                    totalPrice += good.count * good.price
-                    goodList.append(good)
-                else:
-                    raise Exception(f'{good.goodName}商品订单已经提交，请勿重复提交')
+        try:
+            for goodId in goods:
+                good = GoodsSKU.objects.filter(id=goodId).first()
+                if good:
+                    value = redisConn.hget(carKey, goodId)
+                    if value:
+                        good.count = int(value)
+                        totalCount += good.count
+                        totalPrice += good.count * good.price
+                        goodList.append(good)
+                    else:
+                        raise Exception(f'{good.goodName}商品订单已经提交，请勿重复提交')
 
-            else:
-                raise Exception(f"编号{goodId}的商品不存在！")
+                else:
+                    raise Exception(f"编号{goodId}的商品不存在！")
+        except Exception as e:
+            return DlUtil.makeJsonResponse(msg=str(e))
 
         orderSavePoint = transaction.savepoint()
         try:
