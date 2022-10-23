@@ -11,6 +11,7 @@ class OrderInfo(BaseModel):
     OrderInfo_status = ((0, '提交订单'), (1, '未支付'), (2, '已支付'), (3, '已发货'), (4, '待评价'), (5, '已完成'))
     guid = models.UUIDField(primary_key=True, max_length=50, verbose_name='订单主键，使用UUID')
     userId = models.ForeignKey('user.User', on_delete=models.CASCADE, verbose_name='用户主键')
+    addr = models.ForeignKey('user.Address', on_delete=models.CASCADE, blank=True, default=None, verbose_name='地址')
     payWay = models.SmallIntegerField(choices=payWay_chioce, default=1, verbose_name='支付方式')
     goodsCount = models.SmallIntegerField(default=0, verbose_name='订单内商品总数')
     payGoods = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, verbose_name="订单商品总金额")

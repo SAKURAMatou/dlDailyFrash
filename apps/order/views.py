@@ -1,4 +1,7 @@
 import decimal
+import math
+import uuid
+from random import random
 
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -8,8 +11,9 @@ from django.views import View
 
 # Create your views here.
 from django_redis import get_redis_connection
-
+import time
 from apps.goods.models import GoodsSKU
+from apps.order.models import OrderInfo, OrderGoods
 from commonUtil import DlUtil
 from apps.user.models import Address
 
@@ -89,10 +93,71 @@ class commitOrder(View):
 class commit(View):
     def post(self, request):
         post = request.POST
-        address = post.get('address')
+        addressId = post.get('address')
         payWay = post.get('payWay')
         goods = post.get('goods')
         goods = json.loads(goods.replace("'", "\""))
-        print(address, payWay, goods, type(goods))
+        print(addressId, payWay, goods, type(goods))
+
+        # 必填项验证
+        if not all([addressId, payWay, goods]):
+            return DlUtil.makeJsonResponse('缺少必填项！')
+        # 校验收货地址是否存在
+        address = Address.objects.filter(id=addressId).first()
+        if not address:
+            return DlUtil.makeJsonResponse('收货地址异常！')
+        # 校验支付方式
+        flag = False
+        payWay = int(payWay)
+        for t in OrderInfo.payWay_chioce:
+            if payWay == t[0]:
+                flag = True
+                break
+        if not flag:
+            return DlUtil.makeJsonResponse('支付方法错误！')
+
+        # 创建订单
+        # 获取购物车内的商品信息
+        redisConn = get_redis_connection('default')
+        carKey = f'car_user_{request.user.id}'
+        goodList = []
+        totalCount = 0
+        totalPrice = decimal.Decimal()
+        # 后期本次订单中的商品信息，包含商品的数量
+        for goodId in goods:
+            good = GoodsSKU.objects.filter(id=goodId).first()
+            if good:
+                value = redisConn.hget(carKey, goodId)
+                if value:
+                    good.count = int(value)
+                    totalCount += good.count
+                    totalPrice += good.count * good.price
+                    goodList.append(good)
+                else:
+                    raise Exception(f'{good.goodName}商品订单已经提交，请勿重复提交')
+
+            else:
+                raise Exception(f"编号{goodId}的商品不存在！")
+
+        # TODO  创建订单信息dl_order_info表记录
+        guid = uuid.uuid4()
+        user = request.user
+        tradeNo = time.strftime('%Y%m%d%H%M%S', time.localtime()) + str(math.trunc(random() * 10000))
+        orderInfo = OrderInfo.objects.create(guid=guid, userId=user, payWay=payWay, goodsCount=totalCount,
+                                             payGoods=totalPrice,
+                                             payTraffic=10, addr=address, tradeNo=tradeNo)
+
+        # TODO 订单商品表中插入记录，同时需要修改商品的剩余数量
+        for good in goodList:
+            # 创建OrderGoods
+            OrderGoods.objects.create(guid=uuid.uuid4(), orderGuid=orderInfo, skuCount=good.count, skuPrice=good.price,
+                                      skuGuid=good.id)
+            # TODO 商品库存和本次购买数量的验证
+            stock = good.stock - good.count
+            # GoodsSKU.objects.update(id=good.id, stock=stock)
+
+        # TODO 清除用户购物车中提交的订单记录
+        # map(lambda a: a.encode(), goods)
+        redisConn.hdel(carKey, *goods)
 
         return DlUtil.makeJsonResponse(1, "提交成功！")

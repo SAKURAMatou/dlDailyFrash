@@ -37,3 +37,5 @@ def getUserCarList(userId):
     redisConn = get_redis_connection('default')
     key = f'car_user_{userId}'
     return redisConn.hgetall(key)
+
+
