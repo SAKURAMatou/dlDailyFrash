@@ -127,26 +127,42 @@ class commit(View):
         goodList = []
         totalCount = 0
         totalPrice = decimal.Decimal()
+        orderSavePoint = transaction.savepoint()
         # 后期本次订单中的商品信息，包含商品的数量
         try:
             for goodId in goods:
-                good = GoodsSKU.objects.filter(id=goodId).first()
+                # good = GoodsSKU.objects.filter(id=goodId).first()
+                # 通过select for update进行加锁；事务提交之后锁释放
+                good = GoodsSKU.objects.select_for_update().get(id=goodId)
+                # 并发场景模拟获取锁之后暂停10s以供操作另一个账号提交订单
+                # import time
+                # time.sleep(10)
                 if good:
                     value = redisConn.hget(carKey, goodId)
                     if value:
                         good.count = int(value)
+                        # TODO 商品库存和本次购买数量的验证
+                        if good.count > good.stock:
+                            print(f'{request.user.username}购买商品{good.goodName}库存不足')
+                            raise Exception("库存不足")
+                        print(f'{request.user.username}购买商品{good.goodName}成功')
+                        stock = good.stock - good.count
                         totalCount += good.count
                         totalPrice += good.count * good.price
+
                         goodList.append(good)
+                        # 修改商品表中的库存记录
+                        saleCount = good.saleCount + good.count
+                        GoodsSKU.objects.filter(id=goodId).update(stock=stock, saleCount=saleCount)
                     else:
                         raise Exception(f'{good.goodName}商品订单已经提交，请勿重复提交')
 
                 else:
                     raise Exception(f"编号{goodId}的商品不存在！")
         except Exception as e:
+            transaction.savepoint_rollback(orderSavePoint)
             return DlUtil.makeJsonResponse(msg=str(e))
 
-        orderSavePoint = transaction.savepoint()
         try:
             # TODO  创建订单信息dl_order_info表记录
             guid = uuid.uuid4()
@@ -162,8 +178,7 @@ class commit(View):
                 OrderGoods.objects.create(guid=uuid.uuid4(), orderGuid=orderInfo, skuCount=good.count,
                                           skuPrice=good.price,
                                           skuGuid=good.id)
-                # TODO 商品库存和本次购买数量的验证
-                stock = good.stock - good.count
+
                 # GoodsSKU.objects.update(id=good.id, stock=stock)
 
             # TODO 清除用户购物车中提交的订单记录
