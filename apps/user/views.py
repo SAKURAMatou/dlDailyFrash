@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.views import View
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import transaction
 from itsdangerous import URLSafeTimedSerializer
 
 from commonUtil import DlUtil
@@ -18,6 +19,7 @@ from apps.user.models import User
 
 # Create your views here.
 
+@transaction.atomic
 def userRegister(request):
     if request.method == 'GET':
         print(reverse('goods:index'))
@@ -48,7 +50,7 @@ def postUserRegister(request):
     user = User.objects.create_user(user_name, email, pwd)
     user.is_active = 0
     user.save()
-    #
+    # 发送邮件
     # senActiveEmail(user)
     print(user_name, pwd, email, allow)
 
@@ -89,6 +91,7 @@ class userRegisterView(View):
 
 # 用户激活模块
 class userActive(View):
+    @transaction.auto
     def get(self, request, token):
         # 解密
         serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -200,6 +203,7 @@ class userAddress(View):
         resAddress = getAllAddress()
         return render(request, 'user_center_site.html', {"page": "address", "allAddress": resAddress})
 
+    @transaction.atomic
     def post(self, request):
         re_phone = request.POST.get("re_phone")
         zip_code = request.POST.get("zip_code")
@@ -230,6 +234,7 @@ def getAllAddress():
     return resAddress
 
 
+@transaction.atomic()
 def uploadFile(request):
     file = request.FILES.get("upload_file_form")
     client = MinioClient()

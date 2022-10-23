@@ -91,7 +91,9 @@ class commitOrder(View):
 
 
 class commit(View):
+    @transaction.atomic
     def post(self, request):
+        '''订单的提交后台'''
         post = request.POST
         addressId = post.get('address')
         payWay = post.get('payWay')
@@ -139,25 +141,33 @@ class commit(View):
             else:
                 raise Exception(f"编号{goodId}的商品不存在！")
 
-        # TODO  创建订单信息dl_order_info表记录
-        guid = uuid.uuid4()
-        user = request.user
-        tradeNo = time.strftime('%Y%m%d%H%M%S', time.localtime()) + str(math.trunc(random() * 10000))
-        orderInfo = OrderInfo.objects.create(guid=guid, userId=user, payWay=payWay, goodsCount=totalCount,
-                                             payGoods=totalPrice,
-                                             payTraffic=10, addr=address, tradeNo=tradeNo)
+        orderSavePoint = transaction.savepoint()
+        try:
+            # TODO  创建订单信息dl_order_info表记录
+            guid = uuid.uuid4()
+            user = request.user
+            tradeNo = time.strftime('%Y%m%d%H%M%S', time.localtime()) + str(math.trunc(random() * 10000))
+            orderInfo = OrderInfo.objects.create(guid=guid, userId=user, payWay=payWay, goodsCount=totalCount,
+                                                 payGoods=totalPrice,
+                                                 payTraffic=10, addr=address, tradeNo=tradeNo)
 
-        # TODO 订单商品表中插入记录，同时需要修改商品的剩余数量
-        for good in goodList:
-            # 创建OrderGoods
-            OrderGoods.objects.create(guid=uuid.uuid4(), orderGuid=orderInfo, skuCount=good.count, skuPrice=good.price,
-                                      skuGuid=good.id)
-            # TODO 商品库存和本次购买数量的验证
-            stock = good.stock - good.count
-            # GoodsSKU.objects.update(id=good.id, stock=stock)
+            # TODO 订单商品表中插入记录，同时需要修改商品的剩余数量
+            for good in goodList:
+                # 创建OrderGoods
+                OrderGoods.objects.create(guid=uuid.uuid4(), orderGuid=orderInfo, skuCount=good.count,
+                                          skuPrice=good.price,
+                                          skuGuid=good.id)
+                # TODO 商品库存和本次购买数量的验证
+                stock = good.stock - good.count
+                # GoodsSKU.objects.update(id=good.id, stock=stock)
 
-        # TODO 清除用户购物车中提交的订单记录
-        # map(lambda a: a.encode(), goods)
-        redisConn.hdel(carKey, *goods)
+            # TODO 清除用户购物车中提交的订单记录
+            # map(lambda a: a.encode(), goods)
+            redisConn.hdel(carKey, *goods)
+            transaction.savepoint_commit(orderSavePoint)
+        except Exception as e:
+            # 插入订单数据时出现异常回滚
+            transaction.savepoint_rollback(transaction)
+            return DlUtil.makeJsonResponse("服务器异常！")
 
         return DlUtil.makeJsonResponse(1, "提交成功！")
