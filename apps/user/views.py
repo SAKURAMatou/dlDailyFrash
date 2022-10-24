@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -16,8 +16,10 @@ import re
 
 from apps.user.models import User
 
-
 # Create your views here.
+from ..goods.models import GoodsSKU
+from ..order.models import OrderInfo, OrderGoods
+
 
 @transaction.atomic
 def userRegister(request):
@@ -190,7 +192,61 @@ class userOrder(View):
     '''
 
     def get(self, request):
-        return render(request, 'user_center_order.html', {"page": "order"})
+        '''订单列表页面'''
+        user = request.user
+        get = request.GET
+        pageIndex = get.get("pageIndex")
+        if not pageIndex:
+            # 当没有传当前页码时默认第一页
+            pageIndex = 1
+        # 查询订单表获取用户订单信息
+        allOrder = OrderInfo.objects.filter(userId=user).order_by("create_time")
+        if allOrder:
+            paginator = Paginator(allOrder, 2)
+            # 分页之后的对象
+            page = paginator.get_page(pageIndex)
+            # 获取订单中的每一个商品信息
+        for order in page.object_list:
+            orderGoods = OrderGoods.objects.filter(orderGuid=order)
+            # 根据订单商品表中的商品主键找到商品；一个订单对应多个商品，应该循环
+            if orderGoods:
+                orderGoods = list(orderGoods)
+                for orderGood in orderGoods:
+                    good = GoodsSKU.objects.filter(id=orderGood.skuGuid).first()
+                    if good:
+                        orderGood.good = good
+                        # 计算订单内每个商品的小计
+                    orderGood.amount = orderGood.skuCount * orderGood.skuPrice
+            # 把订单商品添加给每一个订单
+            order.orderGoods = orderGoods
+            order.statusText = getTextFromChoice(OrderInfo.OrderInfo_status, order.status)
+
+        # 对页码进行渲染；总页数小于5展示全部
+        # 如果当前页码小于3展示1-5
+        num_pages = paginator.num_pages
+        pageList = []
+        if num_pages < 5:
+            pageList = range(1, num_pages + 1)
+        elif page.number:
+            pageList = range(1, 6)
+        elif num_pages - page.number < 3:
+            # 当前是后3页，则展示最后5页
+            pageList = range(num_pages - 4, num_pages + 1)
+        else:
+            pageList = range(page.number - 2, page.number + 3)
+        page.has_previous()
+        context = {
+            "orderList": page.object_list,
+            "pageList": pageList,
+            "pager": page
+        }
+        return render(request, 'user_center_order.html', context)
+
+
+def getTextFromChoice(choiceTruple, key):
+    for i in choiceTruple:
+        if key == i[0]:
+            return i[1]
 
 
 class userAddress(View):
