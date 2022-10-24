@@ -69,13 +69,14 @@
 
         <div class="pagenation">
             {% if pager.has_previous %}
-                <a href="#">上一页</a>
+                <a href="{% url 'user:userOrder' %}?pageIndex={{ pager.previous_page_number }}">上一页</a>
             {% endif %}
             {% for page in pageList %}
-                <a href="#" {% if pager.number == page %} class="active" {% endif %}>{{ page }}</a>
+                <a href="{% url 'user:userOrder' %}?pageIndex={{ page }}" {% if pager.number == page %}
+                   class="active" {% endif %}>{{ page }}</a>
             {% endfor %}
             {% if pager.has_next %}
-                <a href="#">下一页></a>
+                <a href="{% url 'user:userOrder' %}?pageIndex={{ pager.next_page_number }}">下一页></a>
             {% endif %}
 
         </div>
