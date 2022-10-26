@@ -13,6 +13,7 @@ from django.views import View
 from django_redis import get_redis_connection
 import time
 from apps.goods.models import GoodsSKU
+from apps.order.PayUtil import PayUtil
 from apps.order.models import OrderInfo, OrderGoods
 from commonUtil import DlUtil
 from apps.user.models import Address
@@ -191,3 +192,23 @@ class commit(View):
             return DlUtil.makeJsonResponse("服务器异常！")
 
         return DlUtil.makeJsonResponse(1, "提交成功！")
+
+
+class payForOrder(View):
+    def post(self, request):
+        '''订单支付方法，需要根据支付方式调用不同的支付平台api，暂时不具体对接支付平台，只做演示'''
+        post = request.POST
+        user = request.user
+        # 获取定点标识用于构成订单相关信息
+        orderId = post.get("orderId")
+        if not orderId:
+            DlUtil.makeJsonResponse("缺少必填项！")
+        orderInfo = OrderInfo.objects.filter(guid=orderId).first()
+
+        if not orderInfo:
+            DlUtil.makeJsonResponse("订单信息错误！")
+
+        # 订单存在时查找订单总价，根据支付方式执行不同的发放
+        totalprice = orderInfo.payGoods + orderInfo.payTraffic
+        payUtil = PayUtil(orderInfo.payWay, totalprice, orderInfo.tradeNo)
+        payUtil.handlePay()
