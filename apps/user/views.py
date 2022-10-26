@@ -297,3 +297,5 @@ def uploadFile(request):
     url = client.upLoadFile(file.name, file)
     print("FILES:", request.FILES)
     print(url)
+
+import logging

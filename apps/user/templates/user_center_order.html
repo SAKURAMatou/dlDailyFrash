@@ -3,7 +3,7 @@
 {% block right_content %}
     <div class="right_content clearfix">
         <h3 class="common_title2">全部订单</h3>
-
+        {% csrf_token %}
         {% for order in orderList %}
             <ul class="order_list_th w978 clearfix">
                 <li class="col01">{{ order.create_time }}</li>
@@ -33,7 +33,8 @@
                     </td>
                     <td width="15%">{{ order.payGoods }}元</td>
                     <td width="15%">{{ order.statusText }}</td>
-                    <td width="15%"><a href="#" class="oper_btn">去付款</a></td>
+                    <td width="15%"><a data-orderguid="{{ order.guid }}" href="javascript:void (0);" class="oper_btn">去付款</a>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -84,6 +85,19 @@
 {% endblock right_content %}
 
 
-
+{% block bottomfiles %}
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        const crsfToken = $("input[name=csrfmiddlewaretoken]").val()
+        $('.oper_btn').click(function () {
+            $this = $(this)
+            var requestData = {"orderId": $this.data("orderguid"), "csrfmiddlewaretoken": crsfToken}
+            {#console.log(requestData)#}
+            $.post('/order/payForOrder', requestData, function (data) {
+                console.log(data)
+            })
+        })
+    </script>
+{% endblock bottomfiles %}
 	
 

@@ -212,3 +212,4 @@ class payForOrder(View):
         totalprice = orderInfo.payGoods + orderInfo.payTraffic
         payUtil = PayUtil(orderInfo.payWay, totalprice, orderInfo.tradeNo)
         payUtil.handlePay()
+        return DlUtil.makeJsonResponse(1, "支付请求成功！", {"payAddress": "测试支付页面"})
