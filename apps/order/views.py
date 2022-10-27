@@ -212,4 +212,26 @@ class payForOrder(View):
         totalprice = orderInfo.payGoods + orderInfo.payTraffic
         payUtil = PayUtil(orderInfo.payWay, totalprice, orderInfo.tradeNo)
         payUtil.handlePay()
-        return DlUtil.makeJsonResponse(1, "支付请求成功！", {"payAddress": "测试支付页面"})
+        # print(reverse('order:simulation'))
+        return DlUtil.makeJsonResponse(1, "支付请求成功！", {"payAddress": reverse('order:simulation')})
+
+
+def openPaySimulation(request):
+    return render(request, 'paysimulation.html')
+
+
+class checkPay(View):
+    def post(self, request):
+        '''检查订单状态'''
+        post = request.POST
+        user = request.user
+        orderId = orderId = post.get("orderId")
+
+        if not orderId:
+            DlUtil.makeJsonResponse("缺少必填项！")
+        orderInfo = OrderInfo.objects.filter(guid=orderId).first()
+        if not orderInfo:
+            DlUtil.makeJsonResponse("订单信息错误！")
+
+        # 调用支付宝接口检查支付结果
+        return DlUtil.makeJsonResponse(1, "支付结果检查请求成功！", {"result": random()})

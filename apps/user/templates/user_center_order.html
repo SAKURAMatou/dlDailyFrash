@@ -89,14 +89,36 @@
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript">
         const crsfToken = $("input[name=csrfmiddlewaretoken]").val()
+        var payPage;
+        var loop;
         $('.oper_btn').click(function () {
             $this = $(this)
             var requestData = {"orderId": $this.data("orderguid"), "csrfmiddlewaretoken": crsfToken}
             {#console.log(requestData)#}
             $.post('/order/payForOrder', requestData, function (data) {
                 console.log(data)
+                data = data.data
+                if (data.payAddress) {
+                    payPage = window.open(data.payAddress)
+                    loop = setInterval(() => {
+                        if (payPage && payPage.closed) {
+                            console.log("页面关闭")
+                            clearInterval(loop)
+                            checkPayResult();
+                        }
+                    }, 1000);
+                }
             })
         })
+
+
+        function checkPayResult() {
+            var requestData = {"orderId": $this.data("orderguid"), "csrfmiddlewaretoken": crsfToken}
+            $.post('/order/checkPay', requestData, function (data) {
+                console.log(data)
+                data = data.data
+            })
+        }
     </script>
 {% endblock bottomfiles %}
 	
